@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const li = document.createElement('li');
             li.className = 'list-item';
             li.innerHTML = `
-                <span>Example Avatar 🎅 ${name}</span>
+                <span> 🎅 ${name}</span>
                 <button class="remove-btn" onclick="removeParticipant(${index})">&times;</button>
             `;
             participantsList.appendChild(li);
