@@ -458,6 +458,7 @@ button:active {
     width: 10px;
     height: 10px;
     background: #ffec3d;
+    z-index: 2000;
     animation: confetti-fall 3s ease-out infinite;
 }
 
@@ -584,5 +585,127 @@ button:active {
 
     .big-reveal {
         font-size: 2.5rem;
+    }
+}
+
+/* --- Premium Reveal Card Tunning --- */
+
+.premium-card {
+    background: linear-gradient(135deg, rgba(20, 30, 48, 0.95), rgba(36, 59, 85, 0.95));
+    border: 3px solid var(--gold);
+    box-shadow: 0 0 30px rgba(248, 178, 41, 0.4), inset 0 0 20px rgba(0, 0, 0, 0.5);
+    padding: 3rem;
+    max-width: 500px;
+    width: 90%;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    color: var(--snow-white);
+    transform-origin: center;
+}
+
+/* Decorative Corners */
+.decor-corner {
+    position: absolute;
+    font-size: 2.5rem;
+    color: var(--gold);
+    opacity: 0.8;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.decor-corner.top-left {
+    top: 15px;
+    left: 15px;
+    transform: rotate(-15deg);
+}
+
+.decor-corner.top-right {
+    top: 15px;
+    right: 15px;
+    transform: rotate(15deg);
+}
+
+/* Header Text */
+.reveal-header h1 {
+    font-family: var(--font-heading);
+    font-size: 2.8rem;
+    background: linear-gradient(to right, #fff, #f8b229, #fff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+}
+
+.subtitle {
+    font-size: 1.1rem;
+    color: #ccc;
+    font-weight: 300;
+    margin-bottom: 1.5rem;
+}
+
+/* The Name Reveal */
+.match-container {
+    margin: 2rem 0;
+    position: relative;
+}
+
+/* Fancy underlining/glow for the name */
+.big-reveal {
+    font-family: var(--font-heading);
+    font-size: 4rem;
+    color: var(--gold);
+    text-shadow: 0 0 10px rgba(248, 178, 41, 0.6), 0 0 20px rgba(248, 178, 41, 0.3);
+    letter-spacing: 2px;
+    animation: pulse-gold 2s infinite alternate;
+}
+
+@keyframes pulse-gold {
+    from {
+        text-shadow: 0 0 10px rgba(248, 178, 41, 0.6);
+        transform: scale(1);
+    }
+
+    to {
+        text-shadow: 0 0 30px rgba(248, 178, 41, 1), 0 0 10px white;
+        transform: scale(1.05);
+    }
+}
+
+/* Footer Section */
+.reveal-footer {
+    margin-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 1rem;
+}
+
+.secret-msg {
+    font-size: 1.2rem;
+    color: #ff6b6b;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.sub-msg {
+    font-size: 0.8rem;
+    color: #888;
+    font-style: italic;
+}
+
+/* Mobile Tweaks for the Card */
+@media (max-width: 480px) {
+    .premium-card {
+        padding: 2rem 1.5rem;
+    }
+
+    .reveal-header h1 {
+        font-size: 2rem;
+    }
+
+    .big-reveal {
+        font-size: 2.8rem;
+    }
+
+    .decor-corner {
+        font-size: 1.5rem;
     }
 }
