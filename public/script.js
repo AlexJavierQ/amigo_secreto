@@ -315,7 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Local Audio Source
         // Use encodeURIComponent for filenames with spaces/special characters
         audio.src = "Michael Bublé - It's Beginning To Look A Lot Like Christmas [Official HD Audio].mp3";
-        audio.volume = 0.5;
+        audio.volume = 0.3;
         audio.currentTime = 35; // Start at 0:35
 
         const updateUI = (playing) => {
