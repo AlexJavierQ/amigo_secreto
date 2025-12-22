@@ -10,12 +10,14 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@400;700&family=Poppins:wght@400;600&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Mountains+of+Christmas:wght@400;700&family=Playfair+Display:wght@400;600;700&family=Poppins:wght@400;600&display=swap"
         rel="stylesheet">
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Anime.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <!-- html2pdf.js for PDF download -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 
 <body>
@@ -98,11 +100,73 @@
                         <h2 id="match-name" class="big-reveal">---</h2>
                     </div>
 
-                    <div class="reveal-footer">
-                        <p class="secret-msg"><i class="fas fa-user-secret"></i> ¡Shhh! Es un secreto.</p>
-                        <p class="sub-msg">Toma una captura si es necesario</p>
+                    <!-- Step 2: Description Form -->
+                    <div id="step-form" class="reveal-footer">
+                        <label for="desc-words" class="instruction-label">👇 Describe a esta persona con 1 o 2
+                            características:</label>
+                        <div class="input-row">
+                            <input type="text" id="desc-words" class="premium-input"
+                                placeholder="Ej: Mala copa, Migajero">
+                        </div>
+                        <button id="params-btn" class="btn-gold">📜 Generar Certificado</button>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div id="loading-state" class="hidden">
+                        <div class="spinner"></div>
+                        <p>Los venecos están redactando el certificado...</p>
                     </div>
                 </div>
+            </div>
+
+            <!-- CERTIFICATE MODAL -->
+            <div id="certificate-modal" class="overlay hidden">
+                <div class="certificate-paper" id="printable-cert">
+                    <div class="cert-border">
+                        <div class="cert-content">
+                            <!-- Esquinas decorativas -->
+                            <div class="corner-decor top-left">❧</div>
+                            <div class="corner-decor top-right">❧</div>
+                            <div class="corner-decor bottom-left">❧</div>
+                            <div class="corner-decor bottom-right">❧</div>
+
+                            <h1 class="cert-title">CERTIFICADO DE<br>RECONOCIMIENTO</h1>
+
+                            <div class="cert-subtitle-container">
+                                <h2 id="cert-attributes" class="cert-subtitle">---</h2>
+                                <div class="separator-line"></div>
+                            </div>
+
+                            <div class="cert-recipient">
+                                <h2 id="cert-name">NOMBRE DEL JUGADOR</h2>
+                            </div>
+
+                            <div class="cert-body">
+                                <p id="cert-description">Aquí irá la descripción generada por la IA...</p>
+                            </div>
+
+                            <div class="cert-footer">
+                                <div class="logo-area">
+                                    <img src="logo.png" alt="ChupiReunion Logo" class="cert-logo">
+                                    <span>ChupiReunion 2025</span>
+                                </div>
+                                <div class="seal">
+                                    <img src="estampa.png" alt="Estampa Oficial" class="stamp-img">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="cert-actions">
+                    <button id="edit-tags-btn" class="btn-secondary"><i class="fas fa-tags"></i> Cambiar
+                        Caracteristicas</button>
+                    <button id="regen-btn" class="btn-secondary"><i class="fas fa-sync-alt"></i> Regenerar</button>
+                    <button id="download-pdf-btn" class="btn-primary"><i class="fas fa-file-pdf"></i> Descargar
+                        PDF</button>
+                    <button id="print-btn" class="btn-secondary"><i class="fas fa-print"></i> Imprimir</button>
+                    <button id="close-cert" class="btn-secondary">Cerrar</button>
+                </div>
+            </div>
             </div>
         </section>
 

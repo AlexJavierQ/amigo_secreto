@@ -260,7 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         targets: '.reveal-content',
                         scale: [0, 1],
                         opacity: [0, 1],
-                        duration: 800,
+                        duration: 8000,
                         easing: 'spring(1, 80, 10, 0)'
                     });
                     triggerConfetti();
@@ -360,13 +360,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function triggerConfetti() {
         const colors = ['#d42426', '#165b33', '#f8b229', '#ffffff'];
-        for (let i = 0; i < 100; i++) {
-            const conf = document.createElement('div');
-            conf.classList.add('confetti');
-            conf.style.left = Math.random() * 100 + 'vw';
-            conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-            conf.style.animationDuration = (Math.random() * 2 + 1) + 's';
-            document.body.appendChild(conf);
+
+        // Confetti lento y suave - una sola fase gradual
+        for (let i = 0; i < 50; i++) {
+            // Crear con delay escalonado para efecto más natural
+            setTimeout(() => {
+                const conf = document.createElement('div');
+                conf.classList.add('confetti');
+                conf.style.left = Math.random() * 100 + 'vw';
+                conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                conf.style.animationDuration = (Math.random() * 4 + 6) + 's'; // Lento: 6s a 10s
+                conf.style.opacity = '0.8';
+                document.body.appendChild(conf);
+
+                // Eliminar después de terminar
+                setTimeout(() => conf.remove(), 30000);
+            }, i * 80); // Espaciado de 80ms entre cada pieza
         }
     }
 
@@ -377,5 +386,317 @@ document.addEventListener('DOMContentLoaded', () => {
     // Run Global Effects
     createSnow();
     initMusic();
+
+    // --- CERTIFICATE LOGIC ---
+    const paramsBtn = document.getElementById('params-btn');
+    const descInput = document.getElementById('desc-words');
+    const loadingState = document.getElementById('loading-state');
+    const stepForm = document.getElementById('step-form');
+    const certModal = document.getElementById('certificate-modal');
+
+    // Cert Elements
+    const certAttributes = document.getElementById('cert-attributes'); // The 3 words
+    const certName = document.getElementById('cert-name'); // Recipient
+    const certDescription = document.getElementById('cert-description'); // AI Text
+
+    if (paramsBtn) {
+        paramsBtn.addEventListener('click', async () => {
+            const words = descInput.value.trim();
+            if (!words) {
+                alert("¡Escribe algo! Al menos una palabra describiendo a tu amigo.");
+                return;
+            }
+
+            // Validar maximo 3 palabras (aprox)
+            const wordCount = words.split(/\s+/).length;
+            if (wordCount > 5) { // Allow a bit of flexibility, but prompt asked for 3
+                alert("Trata de ser conciso (máximo 3 palabras).");
+                return;
+            }
+
+            // UI Loading
+            stepForm.classList.add('hidden');
+            loadingState.classList.remove('hidden');
+
+            const recipient = document.getElementById('match-name').textContent;
+
+            try {
+                const description = await generateDescription(recipient, words);
+
+                // Fill Certificate
+                certAttributes.textContent = words.toUpperCase();
+                certName.textContent = recipient;
+                certDescription.textContent = `"${description}"`;
+
+                // Show Modal
+                certModal.classList.remove('hidden');
+
+                // Confetti again!
+                triggerConfetti();
+
+            } catch (error) {
+                console.warn("API Error, switching to local fallback:", error);
+
+                // FALLBACK: Usamos generador local si la API falla
+                const fallbackText = generateLocalDescription(recipient, words);
+
+                certAttributes.textContent = words.toUpperCase();
+                certName.textContent = recipient;
+                certDescription.textContent = `"${fallbackText}"`;
+
+                // No mostramos alerta de error al usuario para no cortar la experiencia ("Magic trick")
+                certModal.classList.remove('hidden');
+                triggerConfetti();
+
+            } finally {
+                loadingState.classList.add('hidden');
+                stepForm.classList.remove('hidden'); // Reset for if they close and retry
+            }
+        });
+    }
+
+    // Gemini API Call con rotación de keys
+    async function generateDescription(name, traits) {
+        // Lista de API Keys para rotar y evitar agotar tokens
+        const apiKeys = [
+            "AIzaSyC-P66UMr7Rn4Va3NA6rZatr-oRNGV_TLM",
+            "AIzaSyCQet4C148tlFNMb8VbAqds4fqQi1scTuo",
+            "AIzaSyCEdWHcBjcN1K63aBrSbRz9wcq2ZuAX8R4"
+        ];
+        // Seleccionar una key aleatoria
+        const apiKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
+        console.log("Usando API Key:", apiKey.substring(0, 15) + "...");
+
+        const adjective = ["audaz", "único", "legendario", "memeable", "caótico", "creativo", "sarcastico"][Math.floor(Math.random() * 7)];
+
+        const prompt = `Actúa como un comediante de roast. Escribe una sola frase mordaz, sarcástica y pasivo-agresiva (máximo 20 palabras) para un certificado de broma.
+
+Contexto: En caso de usar fechas estamos en Navidad 2025.
+Persona: ${name}.
+Características: ${traits}.
+
+GLOSARIO (para que entiendas las expresiones):
+- "Migajero/a": Alguien que se arrastra por amor, acepta las "migajas" de atención.
+- "Mala copa": Persona que se pone agresiva o molesta cuando bebe alcohol.
+- "Intenso/a": Alguien que exagera todo, especialmente en relaciones.
+- "Belicoso/a": Persona que se pone agresiva o molesta cuando bebe alcohol.
+
+
+INSTRUCCIONES:
+- La frase DEBE empezar con "Por..."
+- Usa humor negro y picante. NADA de cursilerías.
+- Basa la frase en las características dadas.
+- Sorpréndeme con algo ${adjective}.`;
+
+        // Modelo exacto solicitado: gemini-2.5-flash (sin preview)
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+
+        console.log("Conectando a Gemini 2.5 Flash...");
+
+        // Simplificamos el body para que coincida con el SDK Python (solo contents)
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [{ text: prompt }]
+                }]
+            })
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Status: ${response.status}\nDetalle: ${errorText}`);
+        }
+
+        const data = await response.json();
+
+
+
+        if (data.error) {
+            throw new Error(`API logic Error: ${data.error.message}`);
+        }
+
+        if (!data.candidates || data.candidates.length === 0) {
+            if (data.promptFeedback) {
+                // Incluir feedback de seguridad en el error
+                throw new Error(`Bloqueo de Seguridad: ${JSON.stringify(data.promptFeedback)}`);
+            }
+            throw new Error("La IA respondió vacía (sin candidatos).");
+        }
+
+        let rawText = data.candidates[0].content.parts[0].text.trim();
+
+        // Limpiar markdown (asteriscos)
+        rawText = rawText.replace(/\*\*/g, '').replace(/\*/g, '');
+
+        // Extraer solo la frase que empieza con "Por..."
+        const porMatch = rawText.match(/Por[^.!?]*[.!?]/i);
+        if (porMatch) {
+            rawText = porMatch[0];
+        }
+
+        // Si la respuesta es ridículamente corta, lanzamos error para investigar
+        if (rawText.length < 10) {
+            throw new Error(`Respuesta demasiado corta: "${rawText}".`);
+        }
+
+        return rawText;
+    }
+
+    // --- GENERADOR LOCAL AVANZADO (FALLBACK) ---
+    // Si la API falla, usamos esto. Tunea esto para que parezca "Inteligente".
+    function generateLocalDescription(name, words) {
+        const traits = words.split(/[ ,]+/).filter(w => w.length > 2);
+        const trait = traits.length > 0 ? traits[Math.floor(Math.random() * traits.length)] : "único"; // Palabra clave del usuario
+
+        // Plantillas Categorizadas para variar el "Sarcasmo"
+        const templates = [
+            // Pasivo Agresivo
+            `Por su impresionante capacidad de ser ${trait} y creer que nadie se da cuenta.`,
+            `Por llevar el concepto de ser ${trait} a niveles que la ciencia no puede explicar.`,
+            `Por hacer que ser ${trait} parezca un deporte olímpico (y ganar el oro).`,
+            `Por esa vibra de ${trait} que, honestamente, ya es parte de su marca personal.`,
+
+            // Sarcasmo Puro
+            `¿${trait}? Sí, claro. Digamos que es su "talento especial".`,
+            `Reconocimiento por intentar no ser ${trait} este año (y fallar estrepitosamente).`,
+            `Por ser consistentemente ${trait} incluso en días festivos. ¡Qué dedicación!`,
+
+            // Absurdo
+            `Por sobrevivir 2024 siendo tan ${trait} sin recibir una sola multa.`,
+            `Porque el horóscopo dijo que este año sería ${trait} y vaya que cumplió.`,
+            `Por convertir ser ${trait} en todo un estilo de vida.`,
+
+            // Específicos Navideños
+            `Por pedir regalo cuando lo único que ofreció fue ser ${trait}.`,
+            `Por ser ${trait}, incluso más que el Grinch en lunes por la mañana.`
+        ];
+
+        return templates[Math.floor(Math.random() * templates.length)];
+    }
+
+    // Print & Close & Regenerate & PDF Download
+    document.getElementById('print-btn').addEventListener('click', () => {
+        window.print();
+    });
+
+    // Descargar PDF
+    document.getElementById('download-pdf-btn').addEventListener('click', async () => {
+        const element = document.getElementById('printable-cert');
+        const recipientName = document.getElementById('cert-name').textContent || 'Certificado';
+
+        // Mostrar feedback
+        const btn = document.getElementById('download-pdf-btn');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando PDF...';
+        btn.disabled = true;
+
+        // Guardar estilos originales
+        const originalStyles = element.style.cssText;
+
+        // Aplicar estilos temporales para maximizar el tamaño
+        element.style.width = '10.5in';
+        element.style.height = '8in';
+        element.style.maxWidth = 'none';
+        element.style.maxHeight = 'none';
+        element.style.margin = '0';
+
+        // Pequeña espera para que los estilos se apliquen
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        const opt = {
+            margin: 0.25,
+            filename: `Certificado_${recipientName.replace(/\s+/g, '_')}.pdf`,
+            image: { type: 'jpeg', quality: 0.95 },
+            html2canvas: {
+                scale: 2,
+                useCORS: true,
+                logging: false
+            },
+            jsPDF: {
+                unit: 'in',
+                format: 'letter',
+                orientation: 'landscape'
+            }
+        };
+
+        try {
+            await html2pdf().set(opt).from(element).save();
+        } finally {
+            // Restaurar estilos originales
+            element.style.cssText = originalStyles;
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    });
+
+    document.getElementById('close-cert').addEventListener('click', () => {
+        certModal.classList.add('hidden');
+        document.body.classList.remove('modal-open');
+    });
+
+    // Variables para guardar el estado actual (para regenerar)
+    let currentRecipient = '';
+    let currentWords = '';
+
+    // Guardar estado cuando se genera (conectar al flujo principal)
+    const originalParamsClick = paramsBtn?.onclick;
+    if (paramsBtn) {
+        // Guardamos recipient y words antes de generar
+        const origListener = paramsBtn.cloneNode(true);
+        paramsBtn.addEventListener('click', () => {
+            currentRecipient = document.getElementById('match-name').textContent;
+            currentWords = descInput.value.trim();
+        }, true); // capture phase, runs first
+    }
+
+    document.getElementById('regen-btn').addEventListener('click', async () => {
+        if (!currentRecipient || !currentWords) {
+            currentRecipient = document.getElementById('match-name').textContent;
+            currentWords = descInput.value.trim() || 'único';
+        }
+
+        const regenBtn = document.getElementById('regen-btn');
+        regenBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando...';
+        regenBtn.disabled = true;
+
+        try {
+            const newDescription = await generateDescription(currentRecipient, currentWords);
+            certDescription.textContent = `"${newDescription}"`;
+        } catch (error) {
+            console.warn("Regen error:", error);
+            const fallbackText = generateLocalDescription(currentRecipient, currentWords);
+            certDescription.textContent = `"${fallbackText}"`;
+        } finally {
+            regenBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Regenerar';
+            regenBtn.disabled = false;
+        }
+    });
+
+    // Cambiar Etiquetas - volver al formulario de entrada
+    document.getElementById('edit-tags-btn').addEventListener('click', () => {
+        certModal.classList.add('hidden');
+        document.body.classList.remove('modal-open');
+        // Enfocar el input de palabras para que el usuario edite
+        descInput.focus();
+    });
+
+    // Añadir clase modal-open cuando se muestra el certificado
+    const originalCertShow = () => {
+        document.body.classList.add('modal-open');
+    };
+
+    // Observar cuando el modal se muestra
+    const certObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.attributeName === 'class') {
+                if (!certModal.classList.contains('hidden')) {
+                    document.body.classList.add('modal-open');
+                }
+            }
+        });
+    });
+    certObserver.observe(certModal, { attributes: true });
 
 });
