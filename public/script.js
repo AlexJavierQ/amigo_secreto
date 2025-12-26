@@ -230,49 +230,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    // --- TOKEN LOGIC (Con encriptación simple) ---
-    // Clave secreta para encriptación (cambia esto por algo único para tu evento)
-    const SECRET_KEY = "ChupiReunion2025SecretKey!@#";
-
-    // Encriptar usando XOR cipher
-    function xorEncrypt(text, key) {
-        let result = '';
-        for (let i = 0; i < text.length; i++) {
-            result += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % key.length));
-        }
-        return result;
-    }
-
+    // --- TOKEN LOGIC ---
     function generateToken(matchData) {
         // matchData = { giver: "A", receiver: "B" }
-        // Añadir timestamp y salt aleatorio para que cada token sea único
-        const payload = JSON.stringify({
-            ...matchData,
-            ts: Date.now(),
-            salt: Math.random().toString(36).substring(2, 8)
-        });
-
-        // Encriptar y luego convertir a Base64
-        const encrypted = xorEncrypt(payload, SECRET_KEY);
-        // Usar encodeURIComponent para caracteres especiales
-        return btoa(unescape(encodeURIComponent(encrypted)));
+        const payload = JSON.stringify(matchData);
+        return btoa(payload);
     }
 
     function decodeToken(token) {
         try {
-            // Decodificar Base64
-            const encrypted = decodeURIComponent(escape(atob(token)));
-            // Desencriptar (XOR es simétrico)
-            const decrypted = xorEncrypt(encrypted, SECRET_KEY);
-            const data = JSON.parse(decrypted);
-
-            // Validar estructura básica
-            if (!data.giver || !data.receiver) {
-                return null;
-            }
-            return data;
+            const payload = atob(token);
+            return JSON.parse(payload);
         } catch (e) {
-            console.error("Token inválido:", e);
             return null;
         }
     }
