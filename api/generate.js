@@ -30,7 +30,11 @@ module.exports = async function handler(req, res) {
             process.env.GEMINI_API_KEY_3
         ].filter(Boolean); // Filtrar keys undefined
 
+        console.log('🔑 API Keys cargadas:', apiKeys.length);
+        console.log('📝 Generando para:', name, 'Traits:', traits);
+
         if (apiKeys.length === 0) {
+            console.error('❌ Error: No hay API keys configuradas');
             return res.status(500).json({ error: 'No hay API keys configuradas' });
         }
 
