@@ -30,11 +30,7 @@ module.exports = async function handler(req, res) {
             process.env.GEMINI_API_KEY_3
         ].filter(Boolean); // Filtrar keys undefined
 
-        console.log('🔑 API Keys cargadas:', apiKeys.length);
-        console.log('📝 Generando para:', name, 'Traits:', traits);
-
         if (apiKeys.length === 0) {
-            console.error('❌ Error: No hay API keys configuradas');
             return res.status(500).json({ error: 'No hay API keys configuradas' });
         }
 
@@ -75,9 +71,8 @@ INSTRUCCIONES:
         });
 
         if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Gemini API Error:', errorText);
-            return res.status(response.status).json({ error: 'Error en API de Gemini', details: errorText });
+            // NO loguear el error completo - puede contener información sensible
+            return res.status(response.status).json({ error: 'No se pudo generar la respuesta. Intenta de nuevo.' });
         }
 
         const data = await response.json();
@@ -100,7 +95,7 @@ INSTRUCCIONES:
         return res.status(200).json({ description: text });
 
     } catch (error) {
-        console.error('Server Error:', error);
+        // NO loguear error - puede contener información sensible
         return res.status(500).json({ error: 'Error interno del servidor' });
     }
 }
