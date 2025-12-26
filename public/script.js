@@ -503,9 +503,9 @@ document.addEventListener('DOMContentLoaded', () => {
     async function generateDescription(name, traits) {
         // Lista de API Keys para rotar y evitar agotar tokens
         const apiKeys = [
-            "AIzaSyC-P66UMr7Rn4Va3NA6rZatr-oRNGV_TLM",
-            "AIzaSyCQet4C148tlFNMb8VbAqds4fqQi1scTuo",
-            "AIzaSyCEdWHcBjcN1K63aBrSbRz9wcq2ZuAX8R4"
+            "AIzaSyBjOqzpekEJeKgVz2br0f8HGHS8pDuJTeY",
+            "AIzaSyC-zRbVQPkU0VqBy8WT1BSrEOPGOb_PLpw",
+            "AIzaSyAxjJYAuBExCOJCgucktw8JDdllXlOTc1s"
         ];
         // Seleccionar una key aleatoria
         const apiKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
